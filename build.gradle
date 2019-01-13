@@ -1,0 +1,39 @@
+group = 'humid'
+
+apply plugin: 'scala'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile('org.scala-lang:scala-library:2.12.6')
+    compile('com.typesafe.akka:akka-actor_2.12:2.5.19')
+
+    testCompile('org.scalatest:scalatest_2.12:3.0.4')
+    testCompile('org.mockito:mockito-core:2.13.0')
+    testCompile('org.pegdown:pegdown:1.6.0')
+    testCompile('com.typesafe.akka:akka-testkit_2.12:2.5.19')
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'humid.Boot'
+    }
+    baseName = 'humid'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task scalaTest(dependsOn: ['testClasses'], type: JavaExec) {
+    main = 'org.scalatest.tools.Runner'
+    args = ['-R', "build/classes/scala/test",
+            '-u', "build/test-results/$name",
+            '-h', "build/resports/scalaTests/$name",
+            '-o'
+    ]
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+test.dependsOn scalaTest
